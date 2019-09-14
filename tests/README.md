@@ -1,1 +1,1 @@
-# Comertis/Serializers-JSON tests
+# Serializers-JSON tests
