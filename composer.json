@@ -4,18 +4,17 @@
   "type": "library",
   "readme": "README.md",
   "license": "MIT",
-  "minimum-stability": "stable",
   "authors": [
     {
       "name": "Cristian Moraru",
-      "email": "cristian.moraru@live.com",
+      "email": "cristian@subsession.org",
       "role": "Developer"
     }
   ],
   "require": {
     "php": ">=7.0.0",
-    "subsession/exceptions": "^1.0",
-    "subsession/serializers-abstraction": "*"
+    "subsession/exceptions": "*",
+    "subsession/serializers-abstraction": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "^7.0"

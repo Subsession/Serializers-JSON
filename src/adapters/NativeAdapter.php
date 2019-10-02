@@ -1,54 +1,31 @@
 <?php
+
 /**
  * PHP Version 7
  *
  * LICENSE:
- * Copyright 2019 Subsession
+ * See the LICENSE file that was provided with the software.
  *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software,
- * and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
+ * Copyright (c) 2019 - present Subsession
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
- * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
- * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * @category Serializers
- * @package  Subsession\Serializers
- * @author   Cristian Moraru <cristian.moraru@live.com>
- * @license  https://opensource.org/licenses/MIT MIT
- * @version  GIT: &Id&
- * @link     https://github.com/Subsession/Serializers-JSON
+ * @author Cristian Moraru <cristian@subsession.org>
  */
 
-namespace Subsession\Serializers\Json;
+namespace Subsession\Serializers\Json\Adapters;
 
-use Subsession\Exceptions\ArgumentNullException;
 use Subsession\Exceptions\InvalidOperationException;
-use Subsession\Serializers\Abstraction\DecoderInterface;
+
+use Subsession\Serializers\Abstraction\{
+    EncoderInterface,
+    DecoderInterface,
+};
 
 /**
- * Undocumented class
+ * This adapter uses the native php `json_encode` & `json_decode` functions
  *
- * @category Serializers
- * @package  Subsession\Serializers
- * @author   Cristian Moraru <cristian.moraru@live.com>
- * @license  https://opensource.org/licenses/MIT MIT
- * @version  Release: 1.0.0
- * @link     https://github.com/Subsession/Serializers-JSON
+ * @author Cristian Moraru <cristian@subsession.org>
  */
-class JsonDecoder implements DecoderInterface
+class NativeAdapter implements EncoderInterface, DecoderInterface
 {
     /**
      * True to return the result as an associative array, false for a nested stdClass hierarchy.
@@ -67,6 +44,34 @@ class JsonDecoder implements DecoderInterface
         self::RECURSION_DEPTH => 512,
         self::OPTIONS => 0,
     ];
+
+    /**
+     * Encodes PHP data to a JSON string.
+     *
+     * @inheritdoc
+     *
+     * @throws InvalidOperationException If $data fails to encode
+     * @access public
+     * @return string
+     */
+    public function encode($data)
+    {
+        try {
+            $encodedJson = json_encode($data);
+        } catch (\JsonException $e) {
+            throw new InvalidOperationException($e->getMessage(), 0, $e);
+        }
+
+        if (\PHP_VERSION_ID >= 70300) {
+            return $encodedJson;
+        }
+
+        if (JSON_ERROR_NONE !== json_last_error() && (false === $encodedJson)) {
+            throw new InvalidOperationException(json_last_error_msg());
+        }
+
+        return $encodedJson;
+    }
 
     /**
      * Decodes data.
@@ -92,9 +97,9 @@ class JsonDecoder implements DecoderInterface
      *
      * @inheritDoc
      *
-     * @access public
      * @throws InvalidOperationException
      * @throws ArgumentNullException If $data argument is null
+     * @access public
      * @return mixed
      */
     public function decode($data, array $context = [])
